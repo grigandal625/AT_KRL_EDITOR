@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 
 def get_django_settings_module() -> str:
@@ -20,13 +21,15 @@ def get_django_settings_module() -> str:
         # Проект используется как приложение, настройки должны быть заданы вручную
         return None
 
-    result = (
+    command_result = (
         subprocess.Popen(
-            " ".join(["python", os.path.join(manage_dir, "manage.py"), "get_settings_module"]),
+            " ".join([sys.executable, os.path.join(manage_dir, "manage.py"), "get_settings_module"]),
             shell=True,
             stdout=subprocess.PIPE,
         )
         .stdout.read()
-        .decode()[:-1]
+        .decode()
     )
+    result = command_result[:-1]
+
     return result

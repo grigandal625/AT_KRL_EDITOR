@@ -32,30 +32,31 @@ class KBService:
     }
 
     @staticmethod
-    def convert(t) -> KBEntity:
+    async def convert(t) -> KBEntity:
         serializer_class, kb_entity_class = KBService.MODEL_CONVERTOR_CLASS_MAPPLING[t.__class__]
         serializer = serializer_class(t)
-        kb_entity = kb_entity_class.from_dict(serializer.data)
+        data = await serializer.adata
+        kb_entity = kb_entity_class.from_dict(data)
         return kb_entity
 
     @staticmethod
-    def convert_kb(kb: models.KnowledgeBase) -> KnowledgeBase:
+    async def convert_kb(kb: models.KnowledgeBase) -> KnowledgeBase:
         result = KnowledgeBase()
-        for t in kb.k_types.all():
-            result.types.append(KBService.convert(t))
-        for o in kb.k_objects.all():
-            kb_class: KBClass = KBService.convert(o)
+        async for t in kb.k_types.all():
+            result.types.append(await KBService.convert(t))
+        async for o in kb.k_objects.all():
+            kb_class: KBClass = await KBService.convert(o)
             object_id = kb_class.id
             class_id = result.get_free_class_id(object_id)
             kb_class.id = class_id
             result.classes.objects.append(kb_class)
             result.world.properties.append(kb_class.create_instance(result, object_id, kb_class.desc, as_property=True))
-        for i in kb.k_intervals.all():
-            result.classes.intervals.append(KBService.convert(i))
-        for e in kb.k_events.all():
-            result.classes.events.append(KBService.convert(e))
-        for r in kb.k_rules.all():
-            result.add_rule(KBService.convert(r))
+        async for i in kb.k_intervals.all():
+            result.classes.intervals.append(await KBService.convert(i))
+        async for e in kb.k_events.all():
+            result.classes.events.append(await KBService.convert(e))
+        async for r in kb.k_rules.all():
+            result.add_rule(await KBService.convert(r))
         return result
 
     @staticmethod

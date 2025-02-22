@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from adrf import serializers, fields
 
 from at_krl_editor.apps.knowledge_base.models import KEvent
 from at_krl_editor.apps.knowledge_base.models import KInterval
@@ -21,7 +21,7 @@ class NumericTypeConvertSerializer(FMModelSerializer):
     _from = serializers.FloatField(source="kt_values.first.data")
     _to = serializers.FloatField(source="kt_values.last.data")
     desc = serializers.CharField(source="comment")
-    meta = serializers.SerializerMethodField()
+    meta = fields.SerializerMethodField()
 
     def get_meta(self, value):
         return "number"
@@ -35,7 +35,7 @@ class SymbolicTypeConvertSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="kb_id")
     values = AttrStringRelatedField(many=True, source="kt_values", attr="data")
     desc = serializers.CharField(source="comment")
-    meta = serializers.SerializerMethodField()
+    meta = fields.SerializerMethodField()
 
     def get_meta(self, value):
         return "string"
@@ -49,7 +49,7 @@ class FuzzyTypeConvertSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="kb_id")
     membership_functions = AttrAsIsRelatedField(many=True, source="kt_values", attr="data", read_only=True)
     desc = serializers.CharField(source="comment")
-    meta = serializers.SerializerMethodField()
+    meta = fields.SerializerMethodField()
 
     def get_meta(self, value):
         return "fuzzy"
@@ -71,6 +71,15 @@ class KTypeConvertSerializer(NumericTypeConvertSerializer, SymbolicTypeConvertSe
         elif instance.meta == KType.MetaTypeChoices.FUZZY:
             return FuzzyTypeConvertSerializer(instance).to_representation(instance)
 
+
+    async def ato_representation(self, instance: KType):
+        if instance.meta == KType.MetaTypeChoices.NUMBER:
+            return await NumericTypeConvertSerializer(instance).ato_representation(instance)
+        elif instance.meta == KType.MetaTypeChoices.STRING:
+            return await SymbolicTypeConvertSerializer(instance).ato_representation(instance)
+        elif instance.meta == KType.MetaTypeChoices.FUZZY:
+            return await FuzzyTypeConvertSerializer(instance).ato_representation(instance)
+
     class Meta:
         model = KType
         fields = "id", "desc"
@@ -80,7 +89,7 @@ class KObjectAttrConvertSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="kb_id")
     type = serializers.CharField(source="type.kb_id")
     desc = serializers.CharField(source="comment")
-    source = serializers.SerializerMethodField()
+    source = fields.SerializerMethodField()
 
     def get_source(self, value):
         return "asked"

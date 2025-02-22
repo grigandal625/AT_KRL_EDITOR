@@ -1,4 +1,6 @@
-from rest_framework import serializers
+from adrf import serializers
+from adrf.fields import aget_attribute
+from adrf.relations import StringRelatedField, RelatedField
 
 
 class FMModelSerializer(serializers.ModelSerializer):
@@ -11,8 +13,15 @@ class FMModelSerializer(serializers.ModelSerializer):
             nres[self.field_name_map.get(k, k)] = v
         return nres
 
+    async def ato_representation(self, instance):
+        res = await super().ato_representation(instance)
+        nres = res.__class__()
+        for k, v in res.items():
+            nres[self.field_name_map.get(k, k)] = v
+        return nres
 
-class AttrStringRelatedField(serializers.StringRelatedField):
+
+class AttrStringRelatedField(StringRelatedField):
     _attr = None
 
     def __init__(self, *, attr, **kwargs):
@@ -22,8 +31,11 @@ class AttrStringRelatedField(serializers.StringRelatedField):
     def to_representation(self, value):
         return str(getattr(value, self._attr))
 
+    async def ato_representation(self, value):
+        return str(await aget_attribute(value, [self._attr]))
 
-class AttrAsIsRelatedField(serializers.RelatedField):
+
+class AttrAsIsRelatedField(RelatedField):
     _attr = None
 
     def __init__(self, *, attr, **kwargs):
@@ -32,3 +44,6 @@ class AttrAsIsRelatedField(serializers.RelatedField):
 
     def to_representation(self, value):
         return getattr(value, self._attr)
+
+    async def ato_representation(self, value):
+        return await aget_attribute(value, [self._attr])
