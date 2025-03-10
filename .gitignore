@@ -4,3 +4,5 @@ __pycache__
 .env
 dist
 tmp.py
+*.sqlite3
+*.db
