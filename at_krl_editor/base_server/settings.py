@@ -14,6 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+CWD = Path(os.getcwd()).resolve()
 
 
 # Quick-start development settings - unsuitable for production
@@ -80,7 +81,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 SQLITE_CONFIG = {
     "ENGINE": "django.db.backends.sqlite3",
-    "NAME": BASE_DIR / "db.sqlite3",
+    "NAME": CWD / "db.sqlite3",
 }
 
 POSTGRES_CONFIG = {
