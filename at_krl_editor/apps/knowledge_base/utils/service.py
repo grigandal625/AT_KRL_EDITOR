@@ -1,4 +1,5 @@
-from adrf import serializers, fields
+from adrf import fields
+from adrf import serializers
 
 from at_krl_editor.apps.knowledge_base.models import KEvent
 from at_krl_editor.apps.knowledge_base.models import KInterval
@@ -13,22 +14,26 @@ from at_krl_editor.apps.knowledge_base.utils.serializers import FMModelSerialize
 
 class NumericTypeConvertSerializer(FMModelSerializer):
     field_name_map = {
-        "_from": "from",
-        "_to": "to",
+        "from_": "from",
+        "to_": "to",
     }
 
     id = serializers.CharField(source="kb_id")
-    _from = serializers.FloatField(source="kt_values.first.data")
-    _to = serializers.FloatField(source="kt_values.last.data")
+    from_ = serializers.FloatField(source="kt_values.first.data")
+    to_ = serializers.FloatField(source="kt_values.last.data")
     desc = serializers.CharField(source="comment")
     meta = fields.SerializerMethodField()
+    tag = fields.SerializerMethodField()
 
     def get_meta(self, value):
         return "number"
 
+    def get_tag(self, value):
+        return "type"
+
     class Meta:
         model = KType
-        fields = "id", "_from", "_to", "desc", "meta"
+        fields = "id", "from_", "to_", "desc", "meta", "tag"
 
 
 class SymbolicTypeConvertSerializer(serializers.ModelSerializer):
@@ -36,13 +41,17 @@ class SymbolicTypeConvertSerializer(serializers.ModelSerializer):
     values = AttrStringRelatedField(many=True, source="kt_values", attr="data")
     desc = serializers.CharField(source="comment")
     meta = fields.SerializerMethodField()
+    tag = fields.SerializerMethodField()
 
     def get_meta(self, value):
         return "string"
 
+    def get_tag(self, value):
+        return "type"
+
     class Meta:
         model = KType
-        fields = "id", "values", "desc", "meta"
+        fields = "id", "values", "desc", "meta", "tag"
 
 
 class FuzzyTypeConvertSerializer(serializers.ModelSerializer):
@@ -50,13 +59,17 @@ class FuzzyTypeConvertSerializer(serializers.ModelSerializer):
     membership_functions = AttrAsIsRelatedField(many=True, source="kt_values", attr="data", read_only=True)
     desc = serializers.CharField(source="comment")
     meta = fields.SerializerMethodField()
+    tag = fields.SerializerMethodField()
 
     def get_meta(self, value):
         return "fuzzy"
 
+    def get_tag(self, value):
+        return "type"
+
     class Meta:
         model = KType
-        fields = "id", "membership_functions", "desc", "meta"
+        fields = "id", "membership_functions", "desc", "meta", "tag"
 
 
 class KTypeConvertSerializer(NumericTypeConvertSerializer, SymbolicTypeConvertSerializer, FuzzyTypeConvertSerializer):
@@ -71,7 +84,6 @@ class KTypeConvertSerializer(NumericTypeConvertSerializer, SymbolicTypeConvertSe
         elif instance.meta == KType.MetaTypeChoices.FUZZY:
             return FuzzyTypeConvertSerializer(instance).to_representation(instance)
 
-
     async def ato_representation(self, instance: KType):
         if instance.meta == KType.MetaTypeChoices.NUMBER:
             return await NumericTypeConvertSerializer(instance).ato_representation(instance)
@@ -82,7 +94,7 @@ class KTypeConvertSerializer(NumericTypeConvertSerializer, SymbolicTypeConvertSe
 
     class Meta:
         model = KType
-        fields = "id", "desc"
+        fields = "id", "desc", "tag"
 
 
 class KObjectAttrConvertSerializer(serializers.ModelSerializer):
@@ -90,13 +102,17 @@ class KObjectAttrConvertSerializer(serializers.ModelSerializer):
     type = serializers.CharField(source="type.kb_id")
     desc = serializers.CharField(source="comment")
     source = fields.SerializerMethodField()
+    tag = fields.SerializerMethodField()
+
+    def get_tag(self, value):
+        return "property"
 
     def get_source(self, value):
         return "asked"
 
     class Meta:
         model = KObjectAttribute
-        fields = "id", "type", "desc", "source"
+        fields = "id", "type", "desc", "source", "tag"
 
 
 class KObjectConvertSerializer(serializers.ModelSerializer):
@@ -104,31 +120,40 @@ class KObjectConvertSerializer(serializers.ModelSerializer):
     desc = serializers.CharField(source="comment")
     group = serializers.CharField()
     properties = KObjectAttrConvertSerializer(many=True, source="ko_attributes")
+    tag = fields.SerializerMethodField()
+
+    def get_tag(self, value):
+        return "class"
 
     class Meta:
         model = KObject
-        fields = "id", "desc", "properties", "group"
+        fields = "id", "desc", "properties", "group", "tag"
 
 
 class KEventConvertSerializer(serializers.ModelSerializer):
-    Name = serializers.CharField(source="kb_id")
+    id = serializers.CharField(source="kb_id")
+    tag = fields.SerializerMethodField()
     desc = serializers.CharField(source="comment")
-    Formula = serializers.JSONField(source="occurance_condition")
+
+    def get_tag(self, value):
+        return "event"
 
     class Meta:
         model = KEvent
-        fields = "Name", "desc", "Formula"
+        fields = "id", "desc", "occurance_condition", "tag"
 
 
 class KIntervalConvertSerializer(serializers.ModelSerializer):
-    Name = serializers.CharField(source="kb_id")
+    id = serializers.CharField(source="kb_id")
+    tag = fields.SerializerMethodField()
     desc = serializers.CharField(source="comment")
-    Open = serializers.JSONField(source="open")
-    Close = serializers.JSONField(source="close")
+
+    def get_tag(self, value):
+        return "interval"
 
     class Meta:
         model = KInterval
-        fields = "Name", "desc", "Open", "Close"
+        fields = "id", "desc", "open", "close", "tag"
 
 
 class KRuleConvertSerializer(serializers.ModelSerializer):
@@ -136,7 +161,11 @@ class KRuleConvertSerializer(serializers.ModelSerializer):
     desc = serializers.CharField(source="comment")
     instructions = AttrAsIsRelatedField(many=True, source="kr_instructions", attr="data", read_only=True)
     else_instructions = AttrAsIsRelatedField(many=True, source="kr_else_instructions", attr="data", read_only=True)
+    tag = fields.SerializerMethodField()
+
+    def get_tag(self, value):
+        return "rule"
 
     class Meta:
         model = KRule
-        fields = "id", "desc", "condition", "instructions", "else_instructions"
+        fields = "id", "desc", "condition", "instructions", "else_instructions", "tag"

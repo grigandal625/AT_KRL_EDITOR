@@ -1,8 +1,6 @@
 import json
 from xml.etree.ElementTree import fromstring
 
-from antlr4 import CommonTokenStream
-from antlr4 import InputStream
 from at_krl.core.kb_class import KBClass
 from at_krl.core.kb_entity import KBEntity
 from at_krl.core.kb_rule import KBRule
@@ -11,32 +9,45 @@ from at_krl.core.kb_type import KBNumericType
 from at_krl.core.kb_type import KBSymbolicType
 from at_krl.core.kb_type import KBType
 from at_krl.core.knowledge_base import KnowledgeBase
-from at_krl.core.temporal.kb_event import KBEvent
-from at_krl.core.temporal.kb_interval import KBInterval
-from at_krl.grammar.at_krlLexer import at_krlLexer
-from at_krl.grammar.at_krlParser import at_krlParser
-from at_krl.utils.error_listener import ATKRLErrorListener
-from at_krl.utils.listener import ATKRLListener
+from at_krl.core.temporal.allen_event import KBEvent
+from at_krl.core.temporal.allen_interval import KBInterval
+from at_krl.models.kb_class import KBClassModel
+from at_krl.models.kb_entity import KBRootModel
+from at_krl.models.kb_rule import KBRuleModel
+from at_krl.models.kb_type import KBFuzzyTypeModel
+from at_krl.models.kb_type import KBNumericTypeModel
+from at_krl.models.kb_type import KBSymbolicTypeModel
+from at_krl.models.temporal.allen_event import KBEventModel
+from at_krl.models.temporal.allen_interval import KBIntervalModel
+from at_krl.utils.context import Context
 
 from at_krl_editor.apps.knowledge_base import models
 from at_krl_editor.apps.knowledge_base.utils import service
 
 
+class KBTypeRootModel(KBRootModel[KBFuzzyTypeModel | KBNumericTypeModel | KBSymbolicTypeModel]):
+    def to_internal(self, context):
+        return self.root.to_internal(context)
+
+
 class KBService:
     MODEL_CONVERTOR_CLASS_MAPPLING = {
-        models.KType: (service.KTypeConvertSerializer, KBType),
-        models.KObject: (service.KObjectConvertSerializer, KBClass),
-        models.KEvent: (service.KEventConvertSerializer, KBEvent),
-        models.KInterval: (service.KIntervalConvertSerializer, KBInterval),
-        models.KRule: (service.KRuleConvertSerializer, KBRule),
+        models.KType: (service.KTypeConvertSerializer, KBType, KBTypeRootModel),
+        models.KObject: (service.KObjectConvertSerializer, KBClass, KBClassModel),
+        models.KEvent: (service.KEventConvertSerializer, KBEvent, KBEventModel),
+        models.KInterval: (service.KIntervalConvertSerializer, KBInterval, KBIntervalModel),
+        models.KRule: (service.KRuleConvertSerializer, KBRule, KBRuleModel),
     }
 
     @staticmethod
     async def convert(t) -> KBEntity:
-        serializer_class, kb_entity_class = KBService.MODEL_CONVERTOR_CLASS_MAPPLING[t.__class__]
+        serializer_class, _, kb_entity_model = KBService.MODEL_CONVERTOR_CLASS_MAPPLING[t.__class__]
         serializer = serializer_class(t)
         data = await serializer.adata
-        kb_entity = kb_entity_class.from_dict(data)
+        # data = json.loads(json.dumps(data))
+        model = kb_entity_model(**data)
+        context = Context(name="convert")
+        kb_entity = model.to_internal(context)
         return kb_entity
 
     @staticmethod
@@ -156,21 +167,7 @@ class KBService:
 
     @staticmethod
     def kb_from_krl(krl_text: str) -> KnowledgeBase:
-        input_stream = InputStream(krl_text)
-        lexer = at_krlLexer(input_stream)  # создаем лексер
-        stream = CommonTokenStream(lexer)
-        parser = at_krlParser(stream)  # создаем парсер
-
-        listener = ATKRLListener()
-        parser.addParseListener(listener)  # добавляем лисенер
-
-        error_listener = ATKRLErrorListener()
-        parser.removeErrorListeners()
-        parser.addErrorListener(error_listener)
-
-        parser.knowledge_base()  # даем команду распарсить БЗ
-        # После этого в объекте listener в свойсте KB будет загруженная бз
-        return listener.KB
+        return KnowledgeBase.from_krl(krl_text)
 
     @staticmethod
     def kb_from_xml(xml_text: str) -> KnowledgeBase:
@@ -180,4 +177,4 @@ class KBService:
     @staticmethod
     def kb_from_json(json_text: str) -> KnowledgeBase:
         kb_dict = json.loads(json_text)
-        return KnowledgeBase.from_dict(kb_dict)
+        return KnowledgeBase.from_json(kb_dict)

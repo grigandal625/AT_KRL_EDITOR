@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "at-krl-editor"
-version = "0.1.1"
+version = "1.0.0"
 description = "Editor component and server for temporal knowledge base"
 authors = ["grigandal625"]
 readme = "README.md"

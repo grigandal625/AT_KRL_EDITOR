@@ -1,6 +1,9 @@
+from typing import Mapping
+
 from adrf import serializers
 from adrf.fields import aget_attribute
-from adrf.relations import StringRelatedField, RelatedField
+from adrf.relations import RelatedField
+from adrf.relations import StringRelatedField
 
 
 class FMModelSerializer(serializers.ModelSerializer):
@@ -29,7 +32,11 @@ class AttrStringRelatedField(StringRelatedField):
         super().__init__(**kwargs)
 
     def to_representation(self, value):
-        return str(getattr(value, self._attr))
+        if hasattr(value, self._attr):
+            return str(getattr(value, self._attr))
+
+        if isinstance(value, Mapping):
+            return str(value.get(self._attr))
 
     async def ato_representation(self, value):
         return str(await aget_attribute(value, [self._attr]))
@@ -43,7 +50,11 @@ class AttrAsIsRelatedField(RelatedField):
         super().__init__(**kwargs)
 
     def to_representation(self, value):
-        return getattr(value, self._attr)
+        if hasattr(value, self._attr):
+            return str(getattr(value, self._attr))
+
+        if isinstance(value, Mapping):
+            return str(value.get(self._attr))
 
     async def ato_representation(self, value):
         return await aget_attribute(value, [self._attr])
