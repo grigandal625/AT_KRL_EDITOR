@@ -6,7 +6,7 @@ from pathlib import Path
 from setuptools import setup
 from setuptools.command.install import install
 
-LOG_FILE = Path(__file__).parent / "install.log"
+LOG_FILE = Path("/var/log/at-krl-editor-install.log")
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
