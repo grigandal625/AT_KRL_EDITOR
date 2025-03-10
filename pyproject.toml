@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "at-krl-editor"
-version = "1.0.5"
+version = "1.0.6"
 description = "Editor component and server for temporal knowledge base"
 authors = ["grigandal625"]
 readme = "README.md"
@@ -30,6 +30,9 @@ pre-commit = "^4.1.0"
 
 [tool.poetry.group.development.dependencies]
 pre-commit = "^4.1.0"
+
+[tool.poetry.extras]
+base_server = ["django"]
 
 [build-system]
 requires = ["poetry-core"]
