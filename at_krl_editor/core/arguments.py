@@ -122,7 +122,7 @@ def get_args() -> dict:
         "-dbname",
         "--db-name",
         dest="db_name",
-        help="Database name",
+        help="Database name (or database path for sqlite engine)",
         required=False,
         default=os.getenv("DB_NAME", "at_krl_editor"),
     )
@@ -200,4 +200,5 @@ ARGS_TO_ENV_MAPPING = {
     "db_name": "DB_NAME",
     "db_user": "DB_USER",
     "db_password": "DB_PASS",
+    "no_worker": "NO_WORKER",
 }

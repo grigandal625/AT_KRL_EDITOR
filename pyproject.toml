@@ -21,19 +21,12 @@ django-cors-headers = "^4.7.0"
 adrf = {git = "https://github.com/grigandal625/adrf.git", rev = "main"}
 redis = "^5.2.1"
 
-[tool.poetry.scripts]
-post-install = "setup:PostInstallCommand"
-
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.1.0"
-
 
 [tool.poetry.group.development.dependencies]
 pre-commit = "^4.1.0"
 
-[tool.poetry.extras]
-base_server = ["django"]
-
 [build-system]
-requires = ["poetry-core", "setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
