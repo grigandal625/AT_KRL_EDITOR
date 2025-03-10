@@ -23,7 +23,7 @@ def get_django_settings_module() -> str:
             import at_krl_editor.base_server.settings
             return "at_krl_editor.base_server.settings"
         except Exception:
-            pass
+            return None
 
     process = subprocess.Popen(
         " ".join([sys.executable, os.path.join(manage_dir, "manage.py"), "get_settings_module"]),
