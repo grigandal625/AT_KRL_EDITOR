@@ -35,5 +35,5 @@ pre-commit = "^4.1.0"
 base_server = ["django"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core", "setuptools"]
+build-backend = "setuptools.build_meta"
