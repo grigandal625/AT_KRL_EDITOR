@@ -79,9 +79,17 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+sqlite_db_name_str = os.getenv("DB_NAME", str(CWD / "db.sqlite3"))
+if not sqlite_db_name_str.endswith('.db') and not sqlite_db_name_str.endswith('.sqlite3'):
+    sqlite_db_name_str += '.sqlite3'
+
+sqlite_db_name = Path(sqlite_db_name_str)
+if not sqlite_db_name.is_absolute():
+    sqlite_db_name = CWD / sqlite_db_name
+
 SQLITE_CONFIG = {
     "ENGINE": "django.db.backends.sqlite3",
-    "NAME": CWD / "db.sqlite3",
+    "NAME": sqlite_db_name,
 }
 
 POSTGRES_CONFIG = {
