@@ -4,12 +4,6 @@ import sys
 
 
 def get_django_settings_module() -> str:
-
-    try:
-        import at_krl_editor.base_server.settings
-        return "at_krl_editor.base_server.settings"
-    except Exception:
-        pass
     
     # Поиск директории с manage.py
     def find_manage_dir() -> str:
@@ -25,8 +19,11 @@ def get_django_settings_module() -> str:
 
     manage_dir = find_manage_dir()
     if not manage_dir:
-        # Проект используется как приложение, настройки должны быть заданы вручную
-        return None
+        try:
+            import at_krl_editor.base_server.settings
+            return "at_krl_editor.base_server.settings"
+        except Exception:
+            pass
 
     process = subprocess.Popen(
         " ".join([sys.executable, os.path.join(manage_dir, "manage.py"), "get_settings_module"]),
