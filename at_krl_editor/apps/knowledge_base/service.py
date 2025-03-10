@@ -2,6 +2,8 @@ import json
 from xml.etree.ElementTree import fromstring
 
 from at_krl.core.kb_class import KBClass
+from at_krl.core.kb_class import PropertyDefinition
+from at_krl.core.kb_class import TypeOrClassReference
 from at_krl.core.kb_entity import KBEntity
 from at_krl.core.kb_rule import KBRule
 from at_krl.core.kb_type import KBFuzzyType
@@ -61,7 +63,9 @@ class KBService:
             class_id = result.get_free_class_id(object_id)
             kb_class.id = class_id
             result.classes.objects.append(kb_class)
-            result.world.properties.append(kb_class.create_instance(result, object_id, kb_class.desc, as_property=True))
+            result.world.properties.append(
+                PropertyDefinition(id=object_id, desc=kb_class.desc, type=TypeOrClassReference(id=kb_class.id))
+            )
         async for i in kb.k_intervals.all():
             result.classes.intervals.append(await KBService.convert(i))
         async for e in kb.k_events.all():
@@ -88,41 +92,45 @@ class KBService:
     @staticmethod
     def type_to_model(t: KBType, kb: models.KnowledgeBase) -> models.KType:
         meta_mapping = {
-            KBNumericType.meta.__get__(object()): models.KType.MetaTypeChoices.NUMBER,
-            KBSymbolicType.meta.__get__(object()): models.KType.MetaTypeChoices.STRING,
-            KBFuzzyType.meta.__get__(object()): models.KType.MetaTypeChoices.FUZZY,
+            KBNumericType.meta: models.KType.MetaTypeChoices.NUMBER,
+            KBSymbolicType.meta: models.KType.MetaTypeChoices.STRING,
+            KBFuzzyType.meta: models.KType.MetaTypeChoices.FUZZY,
         }
         create_kwargs = {"knowledge_base": kb, "kb_id": t.id, "meta": meta_mapping[t.meta], "comment": t.desc}
         result = models.KType.objects.create(**create_kwargs)
         if isinstance(t, KBNumericType):
-            models.KTypeValue.objects.create(type=result, data=t._from)
-            models.KTypeValue.objects.create(type=result, data=t._to)
+            models.KTypeValue.objects.create(type=result, data=t.from_)
+            models.KTypeValue.objects.create(type=result, data=t.to_)
         elif isinstance(t, KBSymbolicType):
             for v in t.values:
                 models.KTypeValue.objects.create(type=result, data=v)
         elif isinstance(t, KBFuzzyType):
             for mf in t.membership_functions:
-                models.KTypeValue.objects.create(type=result, data=mf.__dict__())
+                models.KTypeValue.objects.create(type=result, data=mf.to_representation())
         return result
 
     @staticmethod
     def object_to_model(t: KBClass, kb: models.KnowledgeBase) -> models.KObject:
         result = models.KObject.objects.create(kb_id=t.id, knowledge_base=kb, group=t.group, comment=t.desc)
         for prop in t.properties:
-            attr_type = kb.k_types.filter(kb_id=prop.type_or_class_id).first()
+            attr_type = kb.k_types.filter(kb_id=prop.type.id).first()
             models.KObjectAttribute.objects.create(kb_id=prop.id, object=result, type=attr_type, comment=prop.desc)
         return result
 
     @staticmethod
     def event_to_model(t: KBEvent, kb: models.KnowledgeBase) -> models.KEvent:
         return models.KEvent.objects.create(
-            knowledge_base=kb, kb_id=t.id, occurance_condition=t.occurance_condition.__dict__(), comment=t.desc
+            knowledge_base=kb, kb_id=t.id, occurance_condition=t.occurance_condition.to_representation(), comment=t.desc
         )
 
     @staticmethod
     def interval_to_model(t: KBInterval, kb: models.KnowledgeBase) -> models.KInterval:
         return models.KInterval.objects.create(
-            knowledge_base=kb, kb_id=t.id, open=t.open.__dict__(), close=t.close.__dict__(), comment=t.desc
+            knowledge_base=kb,
+            kb_id=t.id,
+            open=t.open.to_representation(),
+            close=t.close.to_representation(),
+            comment=t.desc,
         )
 
     @staticmethod
@@ -130,12 +138,12 @@ class KBService:
         result = models.KRule.objects.create(
             knowledge_base=kb,
             kb_id=t.id,
-            condition=t.condition.__dict__(),
+            condition=t.condition.to_representation(),
             comment=t.desc,
         )
 
         for instr in t.instructions:
-            models.KRuleInstruction.objects.create(rule=result, data=instr.__dict__())
+            models.KRuleInstruction.objects.create(rule=result, data=instr.to_representation())
         if t.else_instructions:
             for else_instr in t.else_instructions:
                 models.KRuleElseInstruction.objects.create(rule=result, data=else_instr.__dict__())
@@ -150,7 +158,7 @@ class KBService:
             KBService.type_to_model(t, kb)
         for property in data_kb.world.properties:
             object_id = property.id
-            class_id = property.type_or_class_id
+            class_id = property.type.id
 
             cls = data_kb.get_object_by_id(class_id)
             cls.id = object_id

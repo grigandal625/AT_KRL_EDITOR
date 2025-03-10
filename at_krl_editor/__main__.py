@@ -1,6 +1,9 @@
 import asyncio
+import atexit
 import logging
 import os
+import subprocess
+import sys
 from typing import Tuple
 
 import django
@@ -14,6 +17,8 @@ from at_krl_editor.core.arguments import ARGS_TO_ENV_MAPPING
 from at_krl_editor.core.arguments import get_args
 from at_krl_editor.core.component import ATKrlEditor
 from at_krl_editor.utils.settings import get_django_settings_module
+
+logger = logging.getLogger(__name__)
 
 settings_module = get_django_settings_module()
 
@@ -31,6 +36,7 @@ django_application = get_asgi_application()
 
 def get_editor(args: dict = None) -> Tuple[ATKrlEditor, dict]:
     args = args or get_args()
+    no_worker = args.pop("no_worker", False)
     connection_parameters = ConnectionParameters(**args)
 
     # Создание PID-файла (опционально)
@@ -43,7 +49,21 @@ def get_editor(args: dict = None) -> Tuple[ATKrlEditor, dict]:
     except PermissionError:
         pass
 
+    args["no_worker"] = no_worker
     return ATKrlEditor(connection_parameters), args
+
+
+def start_worker():
+    process = subprocess.Popen([sys.executable, "-m", "celery", "-A", "at_krl_editor", "worker", "-l", "info"])
+
+    logger.info("Worker started")
+
+    def kill_worker():
+        process.terminate()
+        process.wait()
+        logger.info("Worker stopped")
+
+    atexit.register(kill_worker)
 
 
 async def main_with_django(args: dict = None):
@@ -61,6 +81,9 @@ async def main_with_django(args: dict = None):
 
         loop = asyncio.get_event_loop()
         loop.create_task(editor.start())
+
+        if not args.get("no_worker"):
+            start_worker()
 
         yield  # Приложение запущено
 

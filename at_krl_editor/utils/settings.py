@@ -21,15 +21,15 @@ def get_django_settings_module() -> str:
         # Проект используется как приложение, настройки должны быть заданы вручную
         return None
 
-    command_result = (
-        subprocess.Popen(
-            " ".join([sys.executable, os.path.join(manage_dir, "manage.py"), "get_settings_module"]),
-            shell=True,
-            stdout=subprocess.PIPE,
-        )
-        .stdout.read()
-        .decode()
+    process = subprocess.Popen(
+        " ".join([sys.executable, os.path.join(manage_dir, "manage.py"), "get_settings_module"]),
+        shell=True,
+        stdout=subprocess.PIPE,
     )
+
+    process.wait()
+
+    command_result = process.stdout.read().decode()
     result = command_result[:-1]
 
     return result

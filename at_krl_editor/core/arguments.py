@@ -82,7 +82,7 @@ def get_args() -> dict:
         dest="redis_host",
         help="Redis host",
         required=False,
-        default=os.getenv("REDIS_HOST", "localhost"),
+        default=os.getenv("REDIS_HOST", "redis"),
     )
 
     # REDIS_PORT
@@ -154,7 +154,7 @@ def get_args() -> dict:
         dest="db_host",
         help="Database host",
         required=False,
-        default=os.getenv("DB_HOST", "localhost"),
+        default=os.getenv("DB_HOST", "postgres"),
     )
 
     # DB_PORT
@@ -166,6 +166,17 @@ def get_args() -> dict:
         required=False,
         default=int(os.getenv("DB_PORT", 5432)),
         type=int,
+    )
+
+    parser.add_argument(
+        "-nw",
+        "--no-worker",
+        dest="no_worker",
+        help="Flag indicating running only server with no celery worker",
+        required=False,
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
     )
 
     args = parser.parse_args()

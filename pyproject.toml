@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "at-krl-editor"
-version = "1.0.0"
+version = "1.0.1"
 description = "Editor component and server for temporal knowledge base"
 authors = ["grigandal625"]
 readme = "README.md"
@@ -19,6 +19,7 @@ celery = "^5.4.0"
 at-queue = {git = "https://github.com/grigandal625/AT_QUEUE.git", rev = "master"}
 django-cors-headers = "^4.7.0"
 adrf = {git = "https://github.com/grigandal625/adrf.git", rev = "main"}
+redis = "^5.2.1"
 
 [tool.poetry.scripts]
 post-install = "setup:PostInstallCommand"
