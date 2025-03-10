@@ -2,7 +2,7 @@
 
 [[package]]
 name = "adrf"
-version = "0.1.15"
+version = "0.1.16"
 description = "Async support for Django REST framework"
 optional = false
 python-versions = ">=3.9"
@@ -18,7 +18,7 @@ djangorestframework = ">=3.14.0"
 type = "git"
 url = "https://github.com/grigandal625/adrf.git"
 reference = "main"
-resolved_reference = "75938f8a68dd2f168cd89be88e66d12892923060"
+resolved_reference = "3fce5357f0f4d6762eeef1964b8411e9d77f2807"
 
 [[package]]
 name = "aio-pika"

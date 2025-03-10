@@ -107,7 +107,7 @@ class KnowledgeBaseViewSet(ModelViewSet):
     async def download_json(self, request, *args, **kwargs):
         instance = await self.aget_object()
         kb = await KBService.convert_kb(instance)
-        buffer = io.BytesIO(json.dumps(kb.__dict__(), ensure_ascii=False).encode())
+        buffer = io.BytesIO(json.dumps(kb.to_representation(), ensure_ascii=False).encode())
         buffer.seek(0)
         return FileResponse(buffer, as_attachment=True, filename=instance.name + ".json")
 

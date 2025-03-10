@@ -4,6 +4,13 @@ import sys
 
 
 def get_django_settings_module() -> str:
+
+    try:
+        import at_krl_editor.base_server.settings
+        return "at_krl_editor.base_server.settings"
+    except Exception:
+        pass
+    
     # Поиск директории с manage.py
     def find_manage_dir() -> str:
         current_dir = os.path.abspath(os.getcwd())
