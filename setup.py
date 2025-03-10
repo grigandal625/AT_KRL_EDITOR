@@ -1,67 +1,63 @@
+import logging
 import os
 import shutil
 import sys
-import logging
+from pathlib import Path
 from setuptools import setup
 from setuptools.command.install import install
 
-# Настройка логгера
-logging.basicConfig(level=logging.INFO, format='%(message)s')
-logger = logging.getLogger('post-install')
+LOG_FILE = Path(__file__).parent / "install.log"
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    force=True
+)
+logger = logging.getLogger()
 
 class PostInstallCommand(install):
     def run(self):
-        logger.info("\n=== Starting installation ===")
+        logger.info("=== PostInstallCommand started ===")
         
-        # Анализ аргументов
-        logger.info(f"System arguments: {sys.argv}")
-        base_server_enabled = any(
-            'base_server' in arg.lower() 
-            for arg in sys.argv
-        )
-        logger.info(f"Base server enabled: {base_server_enabled}")
+        try:
+            # Определяем активацию extra
+            base_server_enabled = "[base_server]" in " ".join(sys.argv).lower()
+            logger.info(f"Base server enabled: {base_server_enabled}")
+            
+            # Стандартная установка
+            install.run(self)
+            
+            # Пути для обработки
+            src_path = Path(__file__).parent / "at_krl_editor" / "base_server"
+            dest_path = Path.cwd() / "base_server"
+            installed_path = Path(self.install_lib) / "at_krl_editor" / "base_server"
+            
+            logger.info(f"Source: {src_path}")
+            logger.info(f"Destination: {dest_path}")
+            logger.info(f"Installed path: {installed_path}")
 
-        # Стандартная установка
-        install.run(self)
-
-        # Пути для отладки
-        base_server_src = os.path.join(
-            os.path.dirname(__file__), 
-            "at_krl_editor", 
-            "base_server"
-        )
-        installed_path = os.path.join(
-            self.install_lib, 
-            "at_krl_editor",
-            "base_server"
-        )
-        dest_path = os.path.join(os.getcwd(), "base_server")
-
-        logger.info(f"Source path: {base_server_src}")
-        logger.info(f"Installed path: {installed_path}")
-        logger.info(f"Destination path: {dest_path}")
-
-        # Логика обработки base_server
-        if base_server_enabled:
-            logger.info("Processing base_server extra...")
-            if os.path.exists(base_server_src):
-                shutil.copytree(base_server_src, dest_path, dirs_exist_ok=True)
-                logger.info(f"Copied template to {dest_path}")
+            if base_server_enabled:
+                # Копирование шаблона
+                if src_path.exists():
+                    shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
+                    logger.info("Template copied successfully")
+                else:
+                    logger.error("Template source not found!")
             else:
-                logger.error("Source template not found!")
-        else:
-            logger.info("Cleaning base_server files...")
-            if os.path.exists(installed_path):
-                logger.info(f"Removing {installed_path}")
-                shutil.rmtree(installed_path)
-            if os.path.exists(dest_path):
-                logger.info(f"Removing {dest_path}")
-                shutil.rmtree(dest_path)
+                # Удаление из site-packages
+                if installed_path.exists():
+                    shutil.rmtree(installed_path)
+                    logger.info("Removed from site-packages")
+                if dest_path.exists():
+                    shutil.rmtree(dest_path)
+                    logger.info("Removed from project directory")
 
-        logger.info("=== Installation completed ===\n")
+        except Exception as e:
+            logger.exception("Critical error during installation:")
+            raise
+
+        logger.info("=== PostInstallCommand completed ===\n")
 
 setup(
-    cmdclass={
-        "install": PostInstallCommand,
-    },
+    cmdclass={"install": PostInstallCommand},
 )
