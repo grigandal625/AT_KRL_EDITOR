@@ -80,8 +80,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 sqlite_db_name_str = os.getenv("DB_NAME", str(CWD / "db.sqlite3"))
-if not sqlite_db_name_str.endswith('.db') and not sqlite_db_name_str.endswith('.sqlite3'):
-    sqlite_db_name_str += '.sqlite3'
+if not sqlite_db_name_str.endswith(".db") and not sqlite_db_name_str.endswith(".sqlite3"):
+    sqlite_db_name_str += ".sqlite3"
 
 sqlite_db_name = Path(sqlite_db_name_str)
 if not sqlite_db_name.is_absolute():

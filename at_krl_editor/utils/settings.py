@@ -4,7 +4,6 @@ import sys
 
 
 def get_django_settings_module() -> str:
-    
     # Поиск директории с manage.py
     def find_manage_dir() -> str:
         current_dir = os.path.abspath(os.getcwd())
@@ -20,9 +19,9 @@ def get_django_settings_module() -> str:
     manage_dir = find_manage_dir()
     if not manage_dir:
         try:
-            import at_krl_editor.base_server.settings
+            __import__("at_krl_editor.base_server.settings")
             return "at_krl_editor.base_server.settings"
-        except Exception:
+        except ImportError:
             return None
 
     process = subprocess.Popen(
