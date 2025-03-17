@@ -6,35 +6,23 @@ import subprocess
 import sys
 from typing import Tuple
 
-import django
 from at_queue.core.session import ConnectionParameters
 from django.core import management
 from django.core.asgi import get_asgi_application
 from uvicorn import Config
 from uvicorn import Server
 
-from at_krl_editor.core.arguments import ARGS_TO_ENV_MAPPING
-from at_krl_editor.core.arguments import get_args
-from at_krl_editor.core.component import ATKrlEditor
-from at_krl_editor.utils.settings import get_django_settings_module
+from at_krl_editor.absolute.django_init import args
+from at_krl_editor.absolute.django_init import get_args
+from at_krl_editor.core.component import ATKRLEditor
 
 logger = logging.getLogger(__name__)
 
-args = get_args()
-for arg_name, arg_value in args.items():
-    env_arg_name = ARGS_TO_ENV_MAPPING.get(arg_name)
-    if env_arg_name and arg_value:
-        os.environ[env_arg_name] = str(arg_value)
-
-settings_module = get_django_settings_module()
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
-django.setup()
 
 django_application = get_asgi_application()
 
 
-def get_editor(args: dict = None) -> Tuple[ATKrlEditor, dict]:
+def get_editor(args: dict = None) -> Tuple[ATKRLEditor, dict]:
     args = args or get_args()
     no_worker = args.pop("no_worker", False)
     connection_parameters = ConnectionParameters(**args)
@@ -50,7 +38,7 @@ def get_editor(args: dict = None) -> Tuple[ATKrlEditor, dict]:
         pass
 
     args["no_worker"] = no_worker
-    return ATKrlEditor(connection_parameters), args
+    return ATKRLEditor(connection_parameters), args
 
 
 def start_worker():
