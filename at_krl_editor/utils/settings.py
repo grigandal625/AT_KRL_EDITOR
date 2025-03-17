@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import re
 
 
 def get_django_settings_module() -> str:
@@ -24,8 +25,9 @@ def get_django_settings_module() -> str:
         except ImportError:
             return None
 
+    command = " ".join([sys.executable, os.path.join(manage_dir, "manage.py"), "get_settings_module"])
     process = subprocess.Popen(
-        " ".join([sys.executable, os.path.join(manage_dir, "manage.py"), "get_settings_module"]),
+        command,
         shell=True,
         stdout=subprocess.PIPE,
     )
@@ -33,6 +35,12 @@ def get_django_settings_module() -> str:
     process.wait()
 
     command_result = process.stdout.read().decode()
-    result = command_result[:-1]
+    index = -1
+    while not re.match(r"\w", command_result[index]):
+        index -= 1
+    if index < -1:
+        result = command_result[:index + 1]
+    else:
+        result = command_result
 
     return result
