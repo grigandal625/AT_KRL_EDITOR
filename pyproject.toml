@@ -8,7 +8,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 django = "^5.1.6"
-setuptools = "^75.8.0"
 jsonschema = "^4.23.0"
 psycopg2-binary = "^2.9.10"
 psycopg2 = "^2.9.10"
