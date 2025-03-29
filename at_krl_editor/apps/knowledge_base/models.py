@@ -16,6 +16,9 @@ class KnowledgeBase(models.Model):
     status = models.IntegerField(default=StatusChoices.OK, choices=StatusChoices.choices)
     error = models.TextField(null=True, blank=True, default=None)
 
+    class Meta:
+        app_label = "knowledge_base"
+
 
 class KType(models.Model):
     class MetaTypeChoices(models.IntegerChoices):
@@ -28,10 +31,16 @@ class KType(models.Model):
     meta = models.IntegerField(choices=MetaTypeChoices.choices)
     comment = models.TextField(null=True, blank=True)
 
+    class Meta:
+        app_label = "knowledge_base"
+
 
 class KTypeValue(models.Model):
     type = models.ForeignKey(KType, on_delete=models.CASCADE, related_name="kt_values")
     data = models.JSONField()
+
+    class Meta:
+        app_label = "knowledge_base"
 
 
 class KObject(models.Model):
@@ -40,6 +49,9 @@ class KObject(models.Model):
     group = models.CharField(max_length=255, null=True, blank=True, default="ГРУППА1")
     comment = models.TextField(null=True, blank=True)
 
+    class Meta:
+        app_label = "knowledge_base"
+
 
 class KObjectAttribute(models.Model):
     kb_id = models.CharField(max_length=255)
@@ -47,12 +59,18 @@ class KObjectAttribute(models.Model):
     type = models.ForeignKey(to=KType, on_delete=models.RESTRICT, related_name="ko_attributes")
     comment = models.TextField(null=True, blank=True)
 
+    class Meta:
+        app_label = "knowledge_base"
+
 
 class KEvent(models.Model):
     kb_id = models.CharField(max_length=255)
     knowledge_base = models.ForeignKey(to=KnowledgeBase, on_delete=models.CASCADE, related_name="k_events")
     occurance_condition = models.JSONField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
+
+    class Meta:
+        app_label = "knowledge_base"
 
 
 class KInterval(models.Model):
@@ -62,6 +80,9 @@ class KInterval(models.Model):
     close = models.JSONField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
 
+    class Meta:
+        app_label = "knowledge_base"
+
 
 class KRule(models.Model):
     kb_id = models.CharField(max_length=255)
@@ -69,12 +90,21 @@ class KRule(models.Model):
     condition = models.JSONField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
 
+    class Meta:
+        app_label = "knowledge_base"
+
 
 class KRuleInstruction(models.Model):
     rule = models.ForeignKey(to=KRule, on_delete=models.CASCADE, related_name="kr_instructions")
     data = models.JSONField()
 
+    class Meta:
+        app_label = "knowledge_base"
+
 
 class KRuleElseInstruction(models.Model):
     rule = models.ForeignKey(to=KRule, on_delete=models.CASCADE, related_name="kr_else_instructions")
     data = models.JSONField()
+
+    class Meta:
+        app_label = "knowledge_base"

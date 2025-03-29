@@ -1,8 +1,8 @@
 import logging
 import os
 
-
 import django
+
 from at_krl_editor.core.arguments import ARGS_TO_ENV_MAPPING
 from at_krl_editor.core.arguments import get_args
 from at_krl_editor.utils.settings import get_django_settings_module
