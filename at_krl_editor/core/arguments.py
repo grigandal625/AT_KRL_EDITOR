@@ -197,6 +197,7 @@ ARGS_TO_ENV_MAPPING = {
     "redis_port": "REDIS_PORT",
     "redis_pass": "REDIS_PASS",
     "db_engine": "DB_ENGINE",
+    "db_host": "DB_HOST",
     "db_name": "DB_NAME",
     "db_user": "DB_USER",
     "db_password": "DB_PASS",
