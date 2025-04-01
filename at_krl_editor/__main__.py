@@ -42,7 +42,12 @@ def get_editor(args: dict = None) -> Tuple[ATKRLEditor, dict]:
 
 
 def start_worker():
-    process = subprocess.Popen([sys.executable, "-m", "celery", "-A", "at_krl_editor", "worker", "-l", "info"])
+    additional_args = []
+    if os.name == "nt":
+        additional_args = ["-P", "solo"]
+    process = subprocess.Popen(
+        [sys.executable, "-m", "celery", "-A", "at_krl_editor", "worker", "-l", "info"] + additional_args
+    )
 
     logger.info("Worker started")
 
