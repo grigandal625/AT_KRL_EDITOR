@@ -170,7 +170,7 @@ resolved_reference = "79fc498e73c4c413ce72f126e1d7ec978058557e"
 
 [[package]]
 name = "at-krl"
-version = "1.0.20"
+version = "1.0.21"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -186,7 +186,7 @@ pydantic-xml = "^2.14.2"
 type = "git"
 url = "https://github.com/grigandal625/AT_KRL.git"
 reference = "master"
-resolved_reference = "0e66137e72c8ffb2431c7149c4bf087cf3e71efc"
+resolved_reference = "3c39612df1a9fc92e726a8b54e089a209fee38cb"
 
 [[package]]
 name = "at-queue"
