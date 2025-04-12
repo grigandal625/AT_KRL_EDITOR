@@ -146,7 +146,7 @@ class KBService:
             models.KRuleInstruction.objects.create(rule=result, data=instr.to_representation())
         if t.else_instructions:
             for else_instr in t.else_instructions:
-                models.KRuleElseInstruction.objects.create(rule=result, data=else_instr.__dict__())
+                models.KRuleElseInstruction.objects.create(rule=result, data=else_instr.to_representation())
         return result
 
     @staticmethod
