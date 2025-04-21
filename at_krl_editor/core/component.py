@@ -1,5 +1,6 @@
 from at_queue.core.at_component import ATComponent
 from at_queue.utils.decorators import component_method
+from typing import Union
 
 from at_krl_editor.apps.knowledge_base.models import KEvent
 from at_krl_editor.apps.knowledge_base.models import KInterval
@@ -24,7 +25,8 @@ class ATKRLEditor(ATComponent):
         return await serializer.adata
 
     @component_method
-    async def get_knowledge_base(self, id: int, format: str = "json", **kwargs) -> dict | str:
+    async def get_knowledge_base(self, id: Union[int, str], format: str = "json", **kwargs) -> dict | str:
+        id = int(id)
         kb_model = await KnowledgeBase.objects.aget(pk=id)
         if kb_model.status != KnowledgeBase.StatusChoices.OK:
             raise ValueError(
@@ -42,37 +44,42 @@ class ATKRLEditor(ATComponent):
         return kb.to_representation()
 
     @component_method
-    async def get_knowledge_base_types(self, id: int, **kwargs) -> dict:
+    async def get_knowledge_base_types(self, id: Union[int, str], **kwargs) -> dict:
+        id = int(id)
         types = await KType.objects.filter(knowledge_base_id=id)
         serializer = KTypeSerializer(types, many=True)
         return await serializer.adata
 
     @component_method
-    async def get_knowledge_base_objects(self, id: int, **kwargs) -> dict:
+    async def get_knowledge_base_objects(self, id: Union[int, str], **kwargs) -> dict:
+        id = int(id)
         objects = await KObject.objects.filter(knowledge_base_id=id)
         serializer = KObjectSerializer(objects, many=True)
         return await serializer.adata
 
     @component_method
-    async def get_knowledge_base_events(self, id: int, **kwargs) -> dict:
+    async def get_knowledge_base_events(self, id: Union[int, str], **kwargs) -> dict:
+        id = int(id)
         events = await KEvent.objects.filter(knowledge_base_id=id)
         serializer = KEventSerializer(events, many=True)
         return await serializer.adata
 
     @component_method
-    async def get_knowledge_base_intervals(self, id: int, **kwargs) -> dict:
+    async def get_knowledge_base_intervals(self, id: Union[int, str], **kwargs) -> dict:
         intervals = await KInterval.objects.filter(knowledge_base_id=id)
         serializer = KIntervalSerializer(intervals, many=True)
         return await serializer.adata
 
     @component_method
-    async def get_knowledge_base_rules(self, id: int, **kwargs) -> dict:
+    async def get_knowledge_base_rules(self, id: Union[int, str], **kwargs) -> dict:
+        id = int(id)
         rules = await KRule.objects.filter(knowledge_base_id=id)
         serializer = KRuleSerializer(rules, many=True)
         return await serializer.adata
 
     @component_method
-    async def get_type(self, id: int, format: str = "json", **kwargs) -> dict | str:
+    async def get_type(self, id: Union[int, str], format: str = "json", **kwargs) -> dict | str:
+        id = int(id)
         type_model = await KType.objects.aget(pk=id)
         if format == "db":
             serializer = KTypeSerializer(type_model)
@@ -85,7 +92,8 @@ class ATKRLEditor(ATComponent):
         return kb_type.to_representation()
 
     @component_method
-    async def get_object(self, id: int, format: str = "json", **kwargs) -> dict | str:
+    async def get_object(self, id: Union[int, str], format: str = "json", **kwargs) -> dict | str:
+        id = int(id)
         object_model = await KObject.objects.aget(pk=id)
         if format == "db":
             serializer = KObjectSerializer(object_model)
@@ -98,7 +106,8 @@ class ATKRLEditor(ATComponent):
         return kb_object.to_representation()
 
     @component_method
-    async def get_event(self, id: int, format: str = "json", **kwargs) -> dict | str:
+    async def get_event(self, id: Union[int, str], format: str = "json", **kwargs) -> dict | str:
+        id = int(id)
         event_model = await KEvent.objects.aget(pk=id)
         if format == "db":
             serializer = KEventSerializer(event_model)
@@ -111,7 +120,8 @@ class ATKRLEditor(ATComponent):
         return kb_event.to_representation()
 
     @component_method
-    async def get_interval(self, id: int, format: str = "json", **kwargs) -> dict | str:
+    async def get_interval(self, id: Union[int, str], format: str = "json", **kwargs) -> dict | str:
+        id = int(id)
         interval_model = await KInterval.objects.aget(pk=id)
         if format == "db":
             serializer = KIntervalSerializer(interval_model)
@@ -124,7 +134,8 @@ class ATKRLEditor(ATComponent):
         return kb_interval.to_representation()
 
     @component_method
-    async def get_rule(self, id: int, format: str = "json", **kwargs) -> dict | str:
+    async def get_rule(self, id: Union[int, str], format: str = "json", **kwargs) -> dict | str:
+        id = int(id)
         rule_model = await KRule.objects.aget(pk=id)
         if format == "db":
             serializer = KRuleSerializer(rule_model)
