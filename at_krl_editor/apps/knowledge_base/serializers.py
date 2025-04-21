@@ -68,7 +68,8 @@ class KTypeSerializer(ModelSerializer):
 
     class Meta:
         model = KType
-        exclude = ("knowledge_base",)
+        fields = "__all__"
+        read_only_fields = ("knowledge_base",)
 
 
 class KObjectAttributeSerializer(ModelSerializer):
@@ -93,7 +94,8 @@ class KObjectSerializer(ModelSerializer):
 
     class Meta:
         model = KObject
-        exclude = ("knowledge_base",)
+        fields = "__all__"
+        read_only_fields = ("knowledge_base",)
 
     async def acreate(self, validated_data):
         ko_attributes = validated_data.pop("ko_attributes", None)
@@ -121,13 +123,15 @@ class KObjectSerializer(ModelSerializer):
 class KEventSerializer(ModelSerializer):
     class Meta:
         model = KEvent
-        exclude = ("knowledge_base",)
+        fields = "__all__"
+        read_only_fields = ("knowledge_base",)
 
 
 class KIntervalSerializer(ModelSerializer):
     class Meta:
         model = KInterval
-        exclude = ("knowledge_base",)
+        fields = "__all__"
+        read_only_fields = ("knowledge_base",)
 
 
 class KRuleInstructionSerializer(ModelSerializer):
@@ -170,7 +174,8 @@ class KRuleSerializer(ModelSerializer):
 
     class Meta:
         model = KRule
-        exclude = ("knowledge_base",)
+        fields = "__all__"
+        read_only_fields = ("knowledge_base",)
 
     async def acreate(self, validated_data):
         kr_instructions = validated_data.pop("kr_instructions", None)
